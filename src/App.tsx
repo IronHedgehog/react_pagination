@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { useSearchParams } from 'react-router';
 import './App.css';
 import { Pagination } from './components/Pagination';
 import { getNumbers } from './utils';
@@ -13,12 +15,24 @@ enum PerPage {
 const items: string[] = getNumbers(1, 42).map(n => `Item ${n}`);
 
 export const App: React.FC = () => {
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(PerPage.FIVE);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get('page')) || 1;
+  const perPage = Number(searchParams.get('perPage')) || PerPage.FIVE;
 
   const startIndex = (page - 1) * perPage;
   const endIndex = Math.min(startIndex + perPage, items.length);
   const visibleItems = items.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage: number) => {
+    searchParams.set('page', newPage.toString());
+    setSearchParams(searchParams);
+  };
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    searchParams.set('perPage', e.target.value);
+    searchParams.set('page', '1');
+    setSearchParams(searchParams);
+  };
 
   return (
     <div className="container">
@@ -35,10 +49,7 @@ export const App: React.FC = () => {
             id="perPageSelector"
             className="form-control"
             value={perPage}
-            onChange={e => {
-              setPerPage(Number(e.target.value));
-              setPage(1);
-            }}
+            onChange={handlePerPageChange}
           >
             <option value={PerPage.THREE}>{PerPage.THREE}</option>
             <option value={PerPage.FIVE}>{PerPage.FIVE}</option>
@@ -56,11 +67,7 @@ export const App: React.FC = () => {
         total={items.length}
         perPage={perPage}
         currentPage={page}
-        onPageChange={(selectedPage: number) => {
-          if (page !== selectedPage) {
-            setPage(selectedPage);
-          }
-        }}
+        onPageChange={handlePageChange}
       />
       <ul>
         {visibleItems.map(item => {

@@ -3,7 +3,7 @@ import React from 'react';
 interface Props {
   total: number;
   perPage: number;
-  currentPage: number;
+  currentPage?: number;
   onPageChange: (selectedPage: number) => void;
 }
 
@@ -54,7 +54,9 @@ export const Pagination: React.FC<Props> = ({
               href={`#${num}`}
               onClick={e => {
                 e.preventDefault();
-                onPageChange(num);
+                if (num !== currentPage) {
+                  onPageChange(num);
+                }
               }}
             >
               {num}
